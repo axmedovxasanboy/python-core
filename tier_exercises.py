@@ -10,9 +10,9 @@ class CheckStyle(Enum):
     NEGATIVE_RATIONALS = 8 # < 0
 
 
-def is_valid_number(n: str, check_style: CheckStyle) -> bool:
+def is_valid_number(n: str, check_style: CheckStyle) -> bool | None:
 
-    has_dot = has_comma = False
+    has_dot = False
     has_minus_sign = has_plus_sign = False
 
     for i in range(len(n)):
@@ -28,17 +28,14 @@ def is_valid_number(n: str, check_style: CheckStyle) -> bool:
             else: 
                 return False
         elif n[i] == ",":
-            if not has_comma:
-                has_comma = True
-            else:
-                return False
+            return False
         elif i != 0 and (n[i] == '+' or n[i] == '-'):
             return False
 
     match check_style:
         case CheckStyle.NATURAL_NUMBERS:
             try:
-                if not has_dot and not has_comma and not has_minus_sign:
+                if not has_dot and not has_minus_sign:
                     num = int(n)
                     if num >= 1:
                         return True
@@ -48,7 +45,7 @@ def is_valid_number(n: str, check_style: CheckStyle) -> bool:
 
         case CheckStyle.WHOLE_NUMBERS:
             try:
-                if not has_dot and not has_comma and not has_minus_sign:
+                if not has_dot and not has_minus_sign:
                     num = int(n)
                     if num >= 0:
                         return True
@@ -58,7 +55,7 @@ def is_valid_number(n: str, check_style: CheckStyle) -> bool:
 
         case CheckStyle.INTEGER_NUMBERS:
             try:
-                if not has_dot and not has_comma:
+                if not has_dot:
                     int(n)
                     return True
             except ValueError as e:
@@ -66,13 +63,22 @@ def is_valid_number(n: str, check_style: CheckStyle) -> bool:
                 return False
         case CheckStyle.RATIONAL_NUMBERS:
             try:
-                if has_dot or has_comma:
-                    num = int(n)
-                    if num >= 1:
-                        return True
+                if has_dot:
+                    float(n)
+                    return True
             except ValueError as e:
                 print(e)
                 return False
+        case CheckStyle.POSITIVE_RATIONALS:
+            try:
+                if not has_minus_sign:
+                    float(n)
+                    return True
+            except ValueError as e:
+                print(e)
+                return False
+
+
 
 def tier_1():
 
@@ -95,6 +101,7 @@ def tier_1():
     user_input = input("You can enter any number we will add <0.> to the given number\nEnter your number: 0.").lower().strip()
 
     while user_input != "q" and user_input != "exit" and user_input != "quit":
+
         break
 
 def tier_2():
