@@ -1,4 +1,7 @@
 from enum import Enum
+from typing import Optional
+import numbers
+
 
 class CheckStyle(Enum):
     NATURAL_NUMBERS = 1 # 1, 2, 3, ...
@@ -8,12 +11,33 @@ class CheckStyle(Enum):
     POSITIVE_RATIONALS = 7 # >= 0
     NEGATIVE_INTEGERS = 6 # < 0
     NEGATIVE_RATIONALS = 8 # < 0
+    ANY_NUMBER = 9 # ... -3.0, -2.9, -1.98, -0.97, 0, 1.1, 2.2, 3.3, 4.4 ...
+
+class ValidNumber:
+
+    class NumberType(Enum):
+        INTEGER = 0
+        RATIONAL = 1
+
+    user_number: str
+    is_valid: bool = False
+    number_type: Optional[NumberType]
+    valid_number: Optional[int | float]
+
+    def __init__(self, user_number: str):
+        self.user_number = user_number
+        self.is_valid = False
+        self.number_type = None
+        self.valid_number = None
 
 
-def is_valid_number(n: str, check_style: CheckStyle) -> bool | None:
+def is_valid_number(n: str, check_style: CheckStyle) -> ValidNumber:
 
     has_dot = False
     has_minus_sign = has_plus_sign = False
+
+    valid = ValidNumber(n)
+
 
     for i in range(len(n)):
         if i == 0:
@@ -26,58 +50,128 @@ def is_valid_number(n: str, check_style: CheckStyle) -> bool | None:
             if not has_dot:
                 has_dot = True
             else: 
-                return False
+                return valid
         elif n[i] == ",":
-            return False
+            return valid
         elif i != 0 and (n[i] == '+' or n[i] == '-'):
-            return False
+            return valid
 
     match check_style:
         case CheckStyle.NATURAL_NUMBERS:
+            valid.is_valid = False
             try:
                 if not has_dot and not has_minus_sign:
                     num = int(n)
                     if num >= 1:
-                        return True
+                        valid.is_valid = True
+                        valid.number_type = ValidNumber.NumberType.INTEGER
+                        valid.valid_number = num
+                        return valid
+                return valid
             except ValueError as e:
                 print(e)
-                return False
+                return valid
 
         case CheckStyle.WHOLE_NUMBERS:
+            valid.is_valid = False
             try:
                 if not has_dot and not has_minus_sign:
                     num = int(n)
                     if num >= 0:
-                        return True
+                        valid.is_valid = True
+                        valid.number_type = ValidNumber.NumberType.INTEGER
+                        valid.valid_number = num
+                        return valid
+                return valid
             except ValueError as e:
                 print(e)
-                return False
+                return valid
 
         case CheckStyle.INTEGER_NUMBERS:
+            valid.is_valid = False
             try:
                 if not has_dot:
-                    int(n)
-                    return True
+                    num = int(n)
+                    valid.is_valid = True
+                    valid.number_type = ValidNumber.NumberType.INTEGER
+                    valid.valid_number = num
+                    return valid
+                return valid
             except ValueError as e:
                 print(e)
-                return False
+                return valid
+
+
         case CheckStyle.RATIONAL_NUMBERS:
+            valid.is_valid = False
             try:
                 if has_dot:
-                    float(n)
-                    return True
+                    num = float(n)
+                    valid.is_valid = True
+                    valid.number_type = ValidNumber.NumberType.RATIONAL
+                    valid.valid_number = num
+                    return valid
+                return valid
             except ValueError as e:
                 print(e)
-                return False
+                return valid
+
         case CheckStyle.POSITIVE_RATIONALS:
+            valid.is_valid = False
             try:
                 if not has_minus_sign:
-                    float(n)
-                    return True
+                    num = float(n)
+                    if num >= 0.0:
+                        valid.is_valid = True
+                        valid.number_type = ValidNumber.NumberType.RATIONAL
+                        valid.valid_number = num
+                        return valid
+                return valid
             except ValueError as e:
                 print(e)
-                return False
+                return valid
 
+        case CheckStyle.NEGATIVE_INTEGERS:
+            valid.is_valid = False
+            try:
+                if not has_plus_sign and has_minus_sign and not has_dot:
+                    num = int(n)
+                    if num < 0:
+                        valid.is_valid = True
+                        valid.number_type = ValidNumber.NumberType.INTEGER
+                        valid.valid_number = num
+                        return valid
+                return valid
+            except ValueError as e:
+                print(e)
+                return valid
+
+        case CheckStyle.NEGATIVE_RATIONALS:
+            valid.is_valid = False
+            try:
+                if has_minus_sign and not has_plus_sign and has_dot:
+                    num = float(n)
+                    if num < 0:
+                        valid.is_valid = True
+                        valid.valid_number = num
+                        valid.number_type = ValidNumber.NumberType.RATIONAL
+                        return valid
+                return valid
+            except ValueError as e:
+                print(e)
+                return valid
+
+        case CheckStyle.ANY_NUMBER:
+            valid.is_valid = False
+            try:
+                num = float(n)
+                valid.is_valid = True
+                valid.valid_number = num
+                valid.number_type = ValidNumber.NumberType.RATIONAL
+                return valid
+            except ValueError as e:
+                print(e)
+                return valid
 
 
 def tier_1():
@@ -101,10 +195,182 @@ def tier_1():
     user_input = input("You can enter any number we will add <0.> to the given number\nEnter your number: 0.").lower().strip()
 
     while user_input != "q" and user_input != "exit" and user_input != "quit":
+        number = is_valid_number(user_input, check_style=CheckStyle.NATURAL_NUMBERS)
+        if number.is_valid:
+            if number.valid_number is None:
+                raise Exception("Please enter a valid number")
+            else:
+                num_length = len(str(number.valid_number))
+                desired_number = number.valid_number / (10 ** num_length)
+                numbers.append(desired_number)
+        else:
+            print("Please enter a valid number. Do not add any dot or signs to your number.")
 
-        break
+        user_input = input("Enter: 0.").lower().strip()
+
+
+    separating_dict = dict()
+
+    separating_dict['low_threshold'] = list()
+    separating_dict['mid_threshold'] = list()
+    separating_dict['high_threshold'] = list()
+
+    for n in numbers:
+        if n <= low_threshold:
+            separating_dict['low_threshold'].append(n)
+        elif mid_threshold >= n > low_threshold:
+            separating_dict['mid_threshold'].append(n)
+        elif high_threshold >= n > mid_threshold:
+            separating_dict['high_threshold'].append(n)
+
+    for item in separating_dict.keys():
+        separating_dict[item] = separating_dict[item]
+
+    for item in separating_dict.keys():
+        print(item, separating_dict[item], len(separating_dict[item]))
+
 
 def tier_2():
-    pass
+    print("Tier 0. Block A — Control flow & numbers (1–6)")
+
+    print("""
+        2. Summary stats, by hand ●● · accumulation, comparison · 
+        ⊕ Given a list of numbers, return its minimum, maximum, and mean — without min(), max(), or sum(). 
+        Use a loop and understand what those built-ins do for you
+        """)
+
+    numbers = list()
+    print("Program is started. For stopping use one of these: q / exit / quit")
+
+    user_input = input("Please enter any number you want.\n>>> ").lower().strip()
+
+    while user_input != "q" and user_input != "exit" and user_input != "quit":
+        valid_number = is_valid_number(user_input, check_style=CheckStyle.ANY_NUMBER)
+        if valid_number.is_valid:
+            if valid_number.valid_number is None:
+                raise Exception("Please enter a valid number")
+
+            numbers.append(valid_number.valid_number)
+        else:
+            print("Please enter a valid number")
+
+        user_input = input(">>> ").lower().strip()
+
+    min_num = numbers[0]
+    max_num = numbers[0]
+    total = 0
+
+    for item in numbers:
+        if item < min_num:
+            min_num = item
+        if item > max_num:
+            max_num = item
+        total += item
+
+    print("Numbers: ", numbers)
+    print("Minimum number: ", min_num)
+    print("Maximum number: ", max_num)
+    print("Mean: ", total/len(numbers))
+
+def tier_2_complicated():
+    print("Tier 0. Block A — Control flow & numbers (1–6)")
+
+    print("Now you may use the built-ins — and also return the median, which has no single built-in (sort, then handle even vs odd length).")
+
+    numbers = list()
+    print("Program is started. For stopping use one of these: q / exit / quit")
+
+    user_input = input("Please enter any number you want.\n>>> ").lower().strip()
+
+    while user_input != "q" and user_input != "exit" and user_input != "quit":
+        valid_number = is_valid_number(user_input, check_style=CheckStyle.ANY_NUMBER)
+        if valid_number.is_valid:
+            if valid_number.valid_number is None:
+                raise Exception("Please enter a valid number")
+
+            numbers.append(valid_number.valid_number)
+        else:
+            print("Please enter a valid number")
+
+        user_input = input(">>> ").lower().strip()
+
+    min_num = min(numbers)
+    max_num = max(numbers)
+    total = sum(numbers)
+    mean = total/len(numbers)
+    sorted_numbers = sorted(numbers)
+    length = len(sorted_numbers)
+    medians = list()
+    if length % 2 == 0:
+        medians = [sorted_numbers[length // 2 - 1], sorted_numbers[length // 2]]
+    else:
+        medians = [sorted_numbers[length // 2]]
+
+    print("Numbers: ", numbers)
+    print("Minimum: ", min_num)
+    print("Maximum: ", max_num)
+    print("Mean: ", mean)
+    print("Sorted numbers: ", sorted_numbers)
+    print("Median(s): ", medians)
+
 def tier_3():
-    pass
+    print("Tier 0. Block A — Control flow & numbers (1–6)")
+
+    print("3. Longest streak ●●● ★ · "
+          "stateful iteration Given a list of daily values and a threshold, find the length of the longest consecutive run where the value stayed strictly above the threshold. "
+          "(This is your MVD streak logic, and anomaly-streak detection.) [1, 5, 6, 2, 7, 8, 9, 1], threshold=4 → 3 (the run 7,8,9) "
+          "Trap: you need to track \"current run\" and \"best run so far\" separately, and reset at the right moment.")
+
+    total_numbers = list()
+    threshold_above_numbers = list()
+    desired_threshold = list()
+    print("Program is started. For stopping use one of these: q / exit / quit")
+
+    threshold = input("Please enter a number you want to be a threshold.\n>>> ").lower().strip()
+    countdown = 0
+    best = 0
+
+    while threshold != "q" and threshold != "exit" and threshold != "quit":
+        valid_number = is_valid_number(threshold, check_style=CheckStyle.ANY_NUMBER)
+        if valid_number.is_valid:
+            if valid_number.valid_number is None:
+                raise Exception("Please enter a valid number")
+            threshold = valid_number.valid_number
+            break
+
+    user_input = input("Please enter any number you want.\n>>> ").lower().strip()
+
+    while user_input != "q" and user_input != "exit" and user_input != "quit":
+        valid_number = is_valid_number(user_input, check_style=CheckStyle.ANY_NUMBER)
+        if valid_number.is_valid:
+            valid_num = valid_number.valid_number
+            if valid_num is None:
+                raise Exception("Please enter a valid number")
+
+            if valid_num >= threshold:
+                threshold_above_numbers.append(valid_num)
+                countdown += 1
+            elif valid_num < threshold:
+                if best < countdown:
+                    best = countdown
+                if len(threshold_above_numbers) > len(desired_threshold):
+                    desired_threshold = threshold_above_numbers.copy()
+
+                countdown = 0
+                threshold_above_numbers = list()
+
+            total_numbers.append(valid_number.valid_number)
+        else:
+            print("Please enter a valid number")
+
+        user_input = input(">>> ").lower().strip()
+
+
+    print("Total number list: ", total_numbers)
+    print("Selected threshold: ", threshold)
+    print("Numbers above threshold: ", desired_threshold)
+    print("The best threshold numbers so far: ", best)
+
+
+if __name__ == "__main__":
+    tier_3()
