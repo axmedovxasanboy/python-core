@@ -1,6 +1,5 @@
 from enum import Enum
 from typing import Optional
-import numbers
 
 
 class CheckStyle(Enum):
@@ -172,7 +171,6 @@ def is_valid_number(n: str, check_style: CheckStyle) -> ValidNumber:
             except ValueError as e:
                 print(e)
                 return valid
-
 
 def exercise_1():
 
@@ -370,64 +368,6 @@ def exercise_3():
     print("Numbers above threshold: ", desired_threshold)
     print("The best threshold numbers so far: ", best)
 
-def tier_5():
-    print("Tier 0. Block A — Control flow & numbers (1–6)")
-
-    print("""
-            5. Human-readable units ●● · integer division, modulo, formatting 
-            Write two converters: bytes → a string like "2.4 MB" (use 1024 steps: B, KB, MB, GB), 
-            and seconds → "2h 15m 30s" (drop zero parts: 90 → "1m 30s"). 
-            You'll format latency and throughput like this constantly.
-            """)
-
-    print("Program is started. For stopping use one of these: q / exit / quit")
-
-    user_unit = input("Please enter any unit you want.\n>>> ").lower().strip()
-
-    valid_user_input = is_valid_number(user_unit, check_style=CheckStyle.WHOLE_NUMBERS)
-
-    if not valid_user_input.is_valid:
-        print("Please enter a valid unit number")
-        raise ValueError("Invalid number provided")
-
-    unit_number = valid_user_input.valid_number
-
-    unit_type = input("""
-    Please select unit type.
-    0. File size (Bytes -> KB, MB, GB, TB, etc.)
-    1. Seconds (Seconds -> Minutes, Hours, etc.)
-    >>> """)
-    valid_unit_type = is_valid_number(unit_type, check_style=CheckStyle.WHOLE_NUMBERS)
-    if not valid_unit_type.is_valid:
-        print("Please enter a valid unit type")
-        raise ValueError("Invalid number provided")
-    unit = valid_unit_type.valid_number
-    if 0 == unit or 1 == unit:
-        unit_type = unit
-    else:
-        raise ValueError("Invalid unit provided")
-
-    if unit_type == 0:
-        whole = 0
-        while unit_number != 0:
-            if unit_number > 1024:
-                whole += 1
-                unit_number /= 1024
-
-
-
-
-    elif unit_type == 1:
-        ### SECONDS CONVERTER
-
-    else:
-        raise ValueError("Unrecognized error have been occurred")
-
-
-
-
-
-
 def exercise_4():
     print("Tier 0. Block A — Control flow & numbers (1–6)")
 
@@ -463,6 +403,118 @@ def exercise_4():
 
         print(user_num[i])
 
+def exercise_5():
+    print("Tier 0. Block A — Control flow & numbers (1–6)")
+
+    print("""
+            5. Human-readable units ●● · integer division, modulo, formatting 
+            Write two converters: bytes → a string like "2.4 MB" (use 1024 steps: B, KB, MB, GB), 
+            and seconds → "2h 15m 30s" (drop zero parts: 90 → "1m 30s"). 
+            You'll format latency and throughput like this constantly.
+            """)
+
+    print("Program is started. For stopping use one of these: q / exit / quit")
+
+    unit_type = input("""
+        Please select unit type.
+        0. File size (Bytes -> KB, MB, GB, TB, etc.)
+        1. Seconds (Seconds -> Minutes, Hours, etc.)
+        >>> """)
+    valid_unit_type = is_valid_number(unit_type, check_style=CheckStyle.WHOLE_NUMBERS)
+    if not valid_unit_type.is_valid:
+        print("Please enter a valid unit type")
+        raise ValueError("Invalid number provided")
+    unit = valid_unit_type.valid_number
+
+
+    user_unit = input("Please enter any unit you want.\n>>> ").lower().strip()
+
+    valid_user_input = is_valid_number(user_unit, check_style=CheckStyle.WHOLE_NUMBERS)
+
+    if not valid_user_input.is_valid:
+        print("Please enter a valid unit number")
+        raise ValueError("Invalid number provided")
+
+    unit_number = valid_user_input.valid_number
+    if unit_number is None or unit_number == "":
+        raise ValueError("Valid number not found")
+
+    if 0 == unit or 1 == unit:
+        unit_type = unit
+    else:
+        raise ValueError("Invalid unit provided")
+
+    if unit_type == 0:
+        unit_identifier = 0
+        helper = int(unit_number)
+        while helper >= 1024:
+            helper = float(helper / 1024)
+            unit_identifier += 1
+
+        if unit_identifier == 0: # bytes
+            print(f"{unit_number} Bytes")
+        elif unit_identifier == 1: # KB
+            print(f"{unit_number} Bytes -> {helper:.2f} Kb")
+        elif unit_identifier == 2: # MB
+            print(f"{unit_number} Bytes -> {helper:.2f} MB")
+        elif unit_identifier == 3: # GB
+            print(f"{unit_number} Bytes -> {helper:.2f} GB")
+        elif unit_identifier == 4: # TB
+            print(f"{unit_number} Bytes -> {helper:.2f} TB")
+        else:
+            raise ValueError("Unrecognized error have been occurred")
+
+
+    elif unit_type == 1:
+        unit_identifier = 0
+        helper = int(unit_number)
+        centuries = years = days = hours = minutes = seconds = None
+        while helper >= 10:
+
+            if unit_identifier == 0:
+                seconds = int(helper) % 60
+                helper = float(helper / 60)
+                minutes = int(helper)
+                unit_identifier += 1
+            elif unit_identifier == 1:
+                minutes = int(helper) % 60
+                helper = float(helper / 60)
+                hours = int(helper)
+                unit_identifier += 1
+            elif unit_identifier == 2:
+                hours = int(helper) % 24
+                helper = float(helper / 24)
+                days = int(helper)
+                unit_identifier += 1
+            elif unit_identifier == 3 and helper > 365:
+                days = int(helper) % 365
+                helper = float(helper / 365)
+                years = int(helper)
+                unit_identifier += 1
+            elif unit_identifier == 4 and helper >= 100:
+                years = int(helper) % 100
+                helper = float(helper / 100)
+                centuries = int(helper)
+                unit_identifier += 1
+            else:
+                break
+
+        if unit_identifier == 0:
+            print(f"{unit_number} Seconds")
+        elif unit_identifier == 1:
+            print(f"{unit_number} Seconds -> {helper:.2f} Minutes")
+        elif unit_identifier == 2:
+            print(f"{unit_number} seconds -> {hours} Hours {minutes} Minutes {seconds} Seconds")
+        elif unit_identifier == 3:
+            print(f"{unit_number} Seconds -> {days} Days {hours} Hours {minutes} Minutes {seconds} Seconds")
+        elif unit_identifier == 4:
+            print(f"{unit_number} Seconds -> {years} Years {days} Days {hours} Hours {minutes} Minutes {seconds} Seconds")
+        elif unit_identifier == 5:
+            print(f"{unit_number} Seconds -> {centuries} Centuries {years} Years {days} Days {hours} Hours {minutes} Minutes {seconds} Seconds ")
+
+    else:
+        raise ValueError("Unrecognized error have been occurred")
+
 
 if __name__ == "__main__":
-    tier_3()
+    exercise_5()
