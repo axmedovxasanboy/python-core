@@ -515,6 +515,34 @@ def exercise_5():
     else:
         raise ValueError("Unrecognized error have been occurred")
 
+def exercise_6():
+    print("Tier 0. Block A — Control flow & numbers (1–6)")
+
+    print("""
+    6. Clean averaging loop ●● · input loop, validation, sentinel · 
+    ⊕ Read numbers interactively until the user types q. 
+    Reject non-numeric junk and re-ask. At the end, print the mean. 
+    This is your averaging exercise again — now apply the is_valid lesson correctly from a blank file (remember what a real number must contain at least one of). """)
+
+    print("Program is started. For stopping use one of these: q / exit / quit")
+
+    number_list = list()
+    user_input = input("Please enter any number you want.\n>>> ").lower().strip()
+
+    while user_input != "q" and user_input != "exit" and user_input != "quit":
+        valid_number_ = is_valid_number(user_input, check_style=CheckStyle.ANY_NUMBER)
+
+        if valid_number_.is_valid:
+            number_list.append(valid_number_.valid_number)
+        else:
+            print("Please enter a valid number.")
+
+        user_input = input(">>> ").lower().strip()
+
+
+
+    print("Number List:", number_list)
+    print("Mean: ", sum(number_list) / len(number_list))
 
 if __name__ == "__main__":
-    exercise_5()
+    exercise_6()
