@@ -174,7 +174,7 @@ def is_valid_number(n: str, check_style: CheckStyle) -> ValidNumber:
                 return valid
 
 
-def tier_1():
+def exercise_1():
 
     print("Tier 0. Block A — Control flow & numbers (1–6)")
 
@@ -229,8 +229,7 @@ def tier_1():
     for item in separating_dict.keys():
         print(item, separating_dict[item], len(separating_dict[item]))
 
-
-def tier_2():
+def exercise_2():
     print("Tier 0. Block A — Control flow & numbers (1–6)")
 
     print("""
@@ -272,7 +271,7 @@ def tier_2():
     print("Maximum number: ", max_num)
     print("Mean: ", total/len(numbers))
 
-def tier_2_complicated():
+def exercise_2_complicated():
     print("Tier 0. Block A — Control flow & numbers (1–6)")
 
     print("Now you may use the built-ins — and also return the median, which has no single built-in (sort, then handle even vs odd length).")
@@ -313,7 +312,7 @@ def tier_2_complicated():
     print("Sorted numbers: ", sorted_numbers)
     print("Median(s): ", medians)
 
-def tier_3():
+def exercise_3():
     print("Tier 0. Block A — Control flow & numbers (1–6)")
 
     print("3. Longest streak ●●● ★ · "
@@ -427,6 +426,42 @@ def tier_5():
 
 
 
+
+
+def exercise_4():
+    print("Tier 0. Block A — Control flow & numbers (1–6)")
+
+    print("4. ID checksum validator ●●● · indexing, modular arithmetic · →fraud (#6)\n"
+          "Validate a number string by a check-digit rule: double every second digit from the right;\n"
+          "if doubling gives a two-digit number, sum its digits;\n"
+          "total all digits;\n"
+          "the string is valid iff the total is divisible by 10. \n"
+          "(This is the Luhn algorithm — it's what's behind Uzcard/Humo/Visa number validation.) \"4561261212345467\" → True \n"
+          "Trap: \"from the right\" and the doubling-then-digit-sum step are where it breaks.")
+
+    user_input = input("Please enter any number you want Recommended length of number is 8.\n>>> ").lower().strip()
+
+    valid_number = is_valid_number(user_input, check_style=CheckStyle.NATURAL_NUMBERS)
+    if valid_number.is_valid:
+        if valid_number.valid_number is None:
+            raise Exception("Please enter a valid number")
+
+        if len(user_input) < 8:
+            print("you have entered less than recommended length")
+    else:
+        print("Please enter a valid number")
+        return
+
+    user_num = valid_number.user_number
+    print(user_num)
+
+    for i in range(len(user_num)-1, -1, -1):
+        if (i+1) % 2 == 0:
+            helper = int(user_num[i])
+            helper = helper * 2
+
+
+        print(user_num[i])
 
 
 if __name__ == "__main__":
