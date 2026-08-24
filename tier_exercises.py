@@ -8,9 +8,9 @@ class CheckStyle(Enum):
     WHOLE_NUMBERS = 2 # 0, 1, 2, 3 ...
     INTEGER_NUMBERS = 3 # ... -3, -2, -1, 0, 1, 2, 3 ...
     RATIONAL_NUMBERS = 4 # fraction of two integers
-    POSITIVE_RATIONALS = 7 # >= 0
-    NEGATIVE_INTEGERS = 6 # < 0
-    NEGATIVE_RATIONALS = 8 # < 0
+    POSITIVE_RATIONALS = 7 # >= 0 (fraction of two positive integers)
+    NEGATIVE_INTEGERS = 6 # < 0 (-1, -2, -3, -4, ...)
+    NEGATIVE_RATIONALS = 8 # < 0 (fraction of two integers and result is negative)
     ANY_NUMBER = 9 # ... -3.0, -2.9, -1.98, -0.97, 0, 1.1, 2.2, 3.3, 4.4 ...
 
 class ValidNumber:
@@ -370,6 +370,63 @@ def tier_3():
     print("Selected threshold: ", threshold)
     print("Numbers above threshold: ", desired_threshold)
     print("The best threshold numbers so far: ", best)
+
+def tier_5():
+    print("Tier 0. Block A — Control flow & numbers (1–6)")
+
+    print("""
+            5. Human-readable units ●● · integer division, modulo, formatting 
+            Write two converters: bytes → a string like "2.4 MB" (use 1024 steps: B, KB, MB, GB), 
+            and seconds → "2h 15m 30s" (drop zero parts: 90 → "1m 30s"). 
+            You'll format latency and throughput like this constantly.
+            """)
+
+    print("Program is started. For stopping use one of these: q / exit / quit")
+
+    user_unit = input("Please enter any unit you want.\n>>> ").lower().strip()
+
+    valid_user_input = is_valid_number(user_unit, check_style=CheckStyle.WHOLE_NUMBERS)
+
+    if not valid_user_input.is_valid:
+        print("Please enter a valid unit number")
+        raise ValueError("Invalid number provided")
+
+    unit_number = valid_user_input.valid_number
+
+    unit_type = input("""
+    Please select unit type.
+    0. File size (Bytes -> KB, MB, GB, TB, etc.)
+    1. Seconds (Seconds -> Minutes, Hours, etc.)
+    >>> """)
+    valid_unit_type = is_valid_number(unit_type, check_style=CheckStyle.WHOLE_NUMBERS)
+    if not valid_unit_type.is_valid:
+        print("Please enter a valid unit type")
+        raise ValueError("Invalid number provided")
+    unit = valid_unit_type.valid_number
+    if 0 == unit or 1 == unit:
+        unit_type = unit
+    else:
+        raise ValueError("Invalid unit provided")
+
+    if unit_type == 0:
+        whole = 0
+        while unit_number != 0:
+            if unit_number > 1024:
+                whole += 1
+                unit_number /= 1024
+
+
+
+
+    elif unit_type == 1:
+        ### SECONDS CONVERTER
+
+    else:
+        raise ValueError("Unrecognized error have been occurred")
+
+
+
+
 
 
 if __name__ == "__main__":
