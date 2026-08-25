@@ -250,12 +250,13 @@ def tier_3(values: list[float], threshold: float) -> int:
 
 def tier_4(number: str) -> bool:
 
+    reverse_number = number[::-1]
     untouched_numbers = list()
     multiplied_numbers = list()
 
-    for i in range(len(number)-1, -1, -1):
-        if i % 2 == 0:
-            multiplied = int(number[i]) * 2
+    for i in range(0, len(reverse_number)):
+        if (i+1) % 2 == 0:
+            multiplied = int(reverse_number[i]) * 2
             multiplied_num = 0
             if multiplied >= 10:
                 while multiplied != 0:
@@ -265,7 +266,7 @@ def tier_4(number: str) -> bool:
                 multiplied_num = multiplied
             multiplied_numbers.append(multiplied_num)
         else:
-            untouched_numbers.append(int(number[i]))
+            untouched_numbers.append(int(reverse_number[i]))
 
     total = sum(multiplied_numbers) + sum(untouched_numbers)
 
@@ -323,19 +324,22 @@ def tier_5_seconds(n: int) -> str:
             unit_identifier += 1
         else:
             break
+    result = ""
 
     if unit_identifier == 0:
         return f"{n}s"
     elif unit_identifier == 1:
-        result = f"{minutes}m "
+        if minutes > 0:
+            result += f"{minutes}m "
 
         if seconds > 0 :
             result += f"{seconds}s"
 
-        return result
+        return result.strip()
 
     elif unit_identifier == 2:
-        result = f"{hours}h "
+        if hours > 0:
+            result += f"{hours}h "
 
         if minutes> 0:
             result += f"{minutes}m "
@@ -343,23 +347,9 @@ def tier_5_seconds(n: int) -> str:
         if seconds > 0:
             result += f"{seconds}s"
 
-        return result
+        return result.strip()
 
     elif unit_identifier == 3:
-        result = f"{days}d "
-
-        if hours > 0:
-            result += f"{hours}h "
-        if minutes > 0:
-            result += f"{minutes}m "
-        if seconds > 0:
-            result += f"{seconds}s"
-
-        return result
-
-    elif unit_identifier == 4:
-        result = f"{years}y "
-
         if days > 0:
             result += f"{days}d "
         if hours > 0:
@@ -369,11 +359,25 @@ def tier_5_seconds(n: int) -> str:
         if seconds > 0:
             result += f"{seconds}s"
 
-        return result
+        return result.strip()
+
+    elif unit_identifier == 4:
+        if years> 0:
+            result += f"{years}y"
+        if days > 0:
+            result += f"{days}d "
+        if hours > 0:
+            result += f"{hours}h "
+        if minutes > 0:
+            result += f"{minutes}m "
+        if seconds > 0:
+            result += f"{seconds}s"
+
+        return result.strip()
+
     elif unit_identifier == 5:
-
-        result = f"{centuries}c "
-
+        if centuries > 0:
+            result += f"{centuries}c"
         if years > 0:
             result += f"{years}y "
         if days > 0:
@@ -385,7 +389,7 @@ def tier_5_seconds(n: int) -> str:
         if seconds > 0:
             result += f"{seconds}s"
 
-        return result
+        return result.strip()
     else:
         raise ValueError("Unrecognized error have been occurred")
 
@@ -446,4 +450,4 @@ def tier_6_complicated() -> float | None:
 
 
 if __name__ == "__main__":
-    print(tier_4("4561261212345467"))
+    print(tier_4("79927398712"))
