@@ -235,23 +235,17 @@ def tier_2_complicated(numbers: list[float]) -> tuple[float, float, float, float
 
 def tier_3(values: list[float], threshold: float) -> int:
 
-    threshold_above_numbers = list()
-    desired_threshold = list()
     countdown = 0
     best = 0
 
     for v in values:
-        if v >= threshold:
-            threshold_above_numbers.append(v)
+        if v > threshold:
             countdown += 1
-        elif v < threshold:
-            if best < countdown:
-                best = countdown
-            if len(threshold_above_numbers) > len(desired_threshold):
-                desired_threshold = threshold_above_numbers.copy()
-
+        elif v <= threshold:
             countdown = 0
-            threshold_above_numbers = list()
+
+        if best < countdown:
+            best = countdown
     return best
 
 def tier_4(number: str) -> bool:
@@ -260,8 +254,16 @@ def tier_4(number: str) -> bool:
     multiplied_numbers = list()
 
     for i in range(len(number)-1, -1, -1):
-        if (i+1) % 2 == 0:
-            multiplied_numbers.append(int(number[i]) * 2)
+        if i % 2 == 0:
+            multiplied = int(number[i]) * 2
+            multiplied_num = 0
+            if multiplied >= 10:
+                while multiplied != 0:
+                    multiplied_num += multiplied % 10
+                    multiplied = int(multiplied / 10)
+            else:
+                multiplied_num = multiplied
+            multiplied_numbers.append(multiplied_num)
         else:
             untouched_numbers.append(int(number[i]))
 
@@ -325,15 +327,65 @@ def tier_5_seconds(n: int) -> str:
     if unit_identifier == 0:
         return f"{n}s"
     elif unit_identifier == 1:
-        return f"{minutes}m {seconds}s"
+        result = f"{minutes}m "
+
+        if seconds > 0 :
+            result += f"{seconds}s"
+
+        return result
+
     elif unit_identifier == 2:
-        return f"{hours}h {minutes}m {seconds}s"
+        result = f"{hours}h "
+
+        if minutes> 0:
+            result += f"{minutes}m "
+
+        if seconds > 0:
+            result += f"{seconds}s"
+
+        return result
+
     elif unit_identifier == 3:
-        return f"{days}d {hours}h {minutes}m {seconds}s"
+        result = f"{days}d "
+
+        if hours > 0:
+            result += f"{hours}h "
+        if minutes > 0:
+            result += f"{minutes}m "
+        if seconds > 0:
+            result += f"{seconds}s"
+
+        return result
+
     elif unit_identifier == 4:
-        return f"{years}y {days}d {hours}h {minutes}m {seconds}s"
+        result = f"{years}y "
+
+        if days > 0:
+            result += f"{days}d "
+        if hours > 0:
+            result += f"{hours}h "
+        if minutes > 0:
+            result += f"{minutes}m "
+        if seconds > 0:
+            result += f"{seconds}s"
+
+        return result
     elif unit_identifier == 5:
-        return f"{centuries} cen {years}y {days}d {hours}h {minutes}m {seconds}s "
+
+        result = f"{centuries}c "
+
+        if years > 0:
+            result += f"{years}y "
+        if days > 0:
+            result += f"{days}d "
+        if hours > 0:
+            result += f"{hours}h "
+        if minutes > 0:
+            result += f"{minutes}m "
+        if seconds > 0:
+            result += f"{seconds}s"
+
+        return result
     else:
         raise ValueError("Unrecognized error have been occurred")
 
@@ -363,7 +415,7 @@ def tier_6() -> float | None:
     return mean
 
 
-# Comment for Claude.
+# Comment for Claude checking.
 # Tier 6 already covers any number that has been entered with comma (,) so that's why I duplicated and rename function name itself
 # You can check that by yourself if you are not so sure about that!
 
@@ -394,4 +446,4 @@ def tier_6_complicated() -> float | None:
 
 
 if __name__ == "__main__":
-    print(tier_6_parse("3,14"))
+    print(tier_4("4561261212345467"))
