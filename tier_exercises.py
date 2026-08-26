@@ -37,6 +37,9 @@ def is_valid_number(n: str, check_style: CheckStyle) -> ValidNumber:
     has_minus_sign = has_plus_sign = False
 
     valid = ValidNumber(n)
+    if len(n.strip()) == 0:
+        valid.is_valid = False
+        return valid
 
 
     for i in range(len(n)):
@@ -196,7 +199,9 @@ def tier_1(scores: list[float]) -> dict[str, int]:
 
     return result
 
-def tier_2(numbers: list[float]) -> tuple[float, float, float]:
+def tier_2(numbers: list[float]) -> tuple[float, float, float] | None:
+    if len(numbers) == 0:
+        return None
     min_num = numbers[0]
     max_num = numbers[0]
     total = 0
@@ -210,7 +215,9 @@ def tier_2(numbers: list[float]) -> tuple[float, float, float]:
 
     return min_num, max_num, total / len(numbers)
 
-def tier_2_complicated(numbers: list[float]) -> tuple[float, float, float, float]:
+def tier_2_complicated(numbers: list[float]) -> tuple[float, float, float, float] | None:
+    if len(numbers) == 0:
+        return None
     min_num = min(numbers)
     max_num = max(numbers)
     total = sum(numbers)
@@ -249,14 +256,16 @@ def tier_3(values: list[float], threshold: float) -> int:
     return best
 
 def tier_4(number: str) -> bool:
-
-    reverse_number = number[::-1]
     untouched_numbers = list()
     multiplied_numbers = list()
 
-    for i in range(0, len(reverse_number)):
-        if (i+1) % 2 == 0:
-            multiplied = int(reverse_number[i]) * 2
+    num_length = len(number)
+    for i in range(0, num_length):
+
+        position_from_right = num_length - i
+
+        if position_from_right % 2 == 0:
+            multiplied = int(number[i]) * 2
             multiplied_num = 0
             if multiplied >= 10:
                 while multiplied != 0:
@@ -266,7 +275,7 @@ def tier_4(number: str) -> bool:
                 multiplied_num = multiplied
             multiplied_numbers.append(multiplied_num)
         else:
-            untouched_numbers.append(int(reverse_number[i]))
+            untouched_numbers.append(int(number[i]))
 
     total = sum(multiplied_numbers) + sum(untouched_numbers)
 
@@ -363,7 +372,7 @@ def tier_5_seconds(n: int) -> str:
 
     elif unit_identifier == 4:
         if years> 0:
-            result += f"{years}y"
+            result += f"{years}y "
         if days > 0:
             result += f"{days}d "
         if hours > 0:
@@ -377,7 +386,7 @@ def tier_5_seconds(n: int) -> str:
 
     elif unit_identifier == 5:
         if centuries > 0:
-            result += f"{centuries}c"
+            result += f"{centuries}c "
         if years > 0:
             result += f"{years}y "
         if days > 0:
@@ -414,6 +423,9 @@ def tier_6() -> float | None:
             print("Please enter a valid number.")
 
         user_input = input(">>> ").lower().strip()
+
+    if len(number_list) == 0:
+        return 0
     mean = sum(number_list) / len(number_list)
     print("Mean: ", mean)
     return mean
@@ -444,10 +456,13 @@ def tier_6_complicated() -> float | None:
             print("Please enter a valid number.")
 
         user_input = input(">>> ").lower().strip()
+    if len(number_list) == 0:
+        return 0
     mean = sum(number_list) / len(number_list)
     print("Mean: ", mean)
     return mean
 
 
 if __name__ == "__main__":
-    print(tier_4("79927398712"))
+    print(tier_2([]))
+    print(tier_2([0, 0, 0]))
