@@ -116,37 +116,85 @@ def tier_6_complicated() -> float | None:
 ## Block B — Strings & text (7–13)
 *The rawest form of ML data work. This is where NLP lives.*
 
+> **Ground rules** (same as Block A): match the given signature exactly — name, parameters, return type. No `input()`/`print()` inside any of these; every one is a plain function this time, no exceptions. The function must **return** its answer. Unstated cases (empty string, a key missing from a dict, malformed input) are deliberately left to you. One example is given per exercise to point you the right way — it is not the full test suite.
+
 **7. Tokenizer** ●● · string methods, iteration
-Given a block of text, return a list of lowercase word-tokens with punctuation stripped. This is step one of every NLP pipeline you'll ever write.
-`"Hello, WORLD! Hello." → ["hello", "world", "hello"]`
+```
+def tier_7(text: str) -> list[str]:
+```
+- **Given:** a string.
+- **Must return:** the words in `text`, lowercased, with punctuation stripped, in original order (duplicates kept).
+- **Example:** `tier_7("Hello, WORLD! Hello.")` → `["hello", "world", "hello"]`
 
-**8. Word frequency (in memory)** ●● · dict accumulation · ⊕
-Given text, return a dict mapping each word → its count, case-insensitive, punctuation-stripped. (Bag-of-words. The foundation of TF-IDF.)
-`"the cat the dog" → {"the": 2, "cat": 1, "dog": 1}`
-`tier_8_complicated`: return the **top-N** words, sorted by count descending, ties broken alphabetically.
+**8. Word frequency (in memory)** ●● · dict accumulation
+```
+def tier_8(text: str) -> dict[str, int]:
+```
+- **Given:** a string.
+- **Must return:** a dict mapping each word (lowercased, punctuation stripped) to how many times it appears.
+- **Example:** `tier_8("the cat the dog")` → `{"the": 2, "cat": 1, "dog": 1}`
 
-**9. Latin ↔ Cyrillic normalizer** ●●● **★** · dict lookup, string building · →`uztext` (#5)
-Convert Uzbek Latin text to Cyrillic using a mapping you build (e.g. `a→а`, `b→б`, `sh→ш`, `ch→ч`, `o'→ў`, `g'→ғ`). You design and fill the table; I'm giving you the rule, not the data.
-`"shahar" → "шаҳар"`
-*Trap: the digraphs. `sh` is one Cyrillic letter, but your scanner sees `s` then `h`. You must match multi-character sequences before single ones. This is the actual hard part of your real PyPI package.*
+```
+def tier_8_complicated(text: str, n: int) -> list[tuple[str, int]]:
+```
+- **Given:** a string, and how many top words to return.
+- **Must return:** a list of `(word, count)` pairs — the `n` most frequent words, sorted by count descending; ties broken alphabetically by word. (A `dict` can't express this: dict equality doesn't care about order, so it can't check that you got the ranking right — that's why this one returns a list.)
+- **Example:** `tier_8_complicated("the cat the dog the bird cat", 3)` → `[("the", 3), ("cat", 2), ("bird", 1)]` — `"bird"` beats `"dog"` for third place because they're tied at 1 and `"bird"` comes first alphabetically.
 
-**10. Hamming distance** ●● · parallel iteration · ⊕
-Given two equal-length strings, count the positions where they differ. (Fuzzy matching, dedup tolerance.)
-`"karol", "kapol" → 1`
-`tier_10_complicated` **★ ●●●**: full **Levenshtein** edit distance (insert/delete/substitute) on unequal-length strings. This is real dynamic programming — hard, optional, near the top of the ladder in spirit.
+**9. Latin ↔ Cyrillic normalizer** ●●● **★** · dict lookup, string building
+```
+def tier_9(text: str) -> str:
+```
+- **Given:** a string of Uzbek Latin text.
+- **Must return:** its Cyrillic transliteration.
+- **The mapping table is not given — building it is part of the exercise.** Look up the real Latin↔Cyrillic correspondence for Uzbek (including digraphs like `sh`, `ch`, `o'`, `g'`) and encode it yourself. I'm specifying the function's job, not handing you the data.
+- **Example:** `tier_9("shahar")` → `"шаҳар"`
+- *Trap: `sh` is one Cyrillic letter, but a naive scanner sees `s` then `h` separately. Multi-character sequences must be matched before single ones. This is the actual hard part of your real `uztext` package.*
 
-**11. Log-level counter** ●● · string splitting, dict counting · →observability
-Given log lines like `2026-06-26 14:03:12 ERROR auth: bad token`, parse out the level and count occurrences of each level (INFO/WARN/ERROR). Debugging from logs is a real skill.
-`{"ERROR": 12, "WARN": 3, "INFO": 40}`
+**10. Hamming distance** ●● · parallel iteration
+```
+def tier_10(a: str, b: str) -> int:
+```
+- **Given:** two strings of equal length.
+- **Must return:** the count of positions where they differ.
+- **Example:** `tier_10("karol", "kapol")` → `1`
+
+```
+def tier_10_complicated(a: str, b: str) -> int:
+```
+- **Given:** two strings, any lengths (not necessarily equal).
+- **Must return:** the full Levenshtein edit distance — the minimum number of single-character insertions, deletions, and substitutions to turn `a` into `b`.
+- **Example:** `tier_10_complicated("kitten", "sitting")` → `3` (a well-known textbook case — worth checking your answer against a source you trust before deciding it's right)
+- Optional. Real dynamic programming, and the hardest thing in this block — starred for a reason.
+
+**11. Log-level counter** ●● · string splitting, dict counting
+```
+def tier_11(log_lines: list[str]) -> dict[str, int]:
+```
+- **Given:** a list of log line strings, each shaped like `"2026-06-26 14:03:12 ERROR auth: bad token"` — a timestamp, then a level, then a colon-separated message.
+- **Must return:** a dict mapping each level that actually appears to its count. (A level with zero occurrences shouldn't show up at all — see the example.)
+- **Example:** `tier_11(["2026-06-26 14:03:12 ERROR auth: bad token", "2026-06-26 14:03:15 INFO auth: login ok", "2026-06-26 14:03:16 ERROR auth: bad token"])` → `{"ERROR": 2, "INFO": 1}` — no `"WARN"` key, since none appeared.
 
 **12. CSV line parser, by hand** ●●● **★** · char-by-char state machine
-Split one comma-separated line into fields **without the `csv` module** — and correctly handle a quoted field containing a comma: `Tashkent,"Yunusobod, 5",2026` is **three** fields, not four.
-*Trap: you need a flag for "am I inside quotes right now?" This is exactly what `pandas.read_csv` does for you — build it once so you know.*
+```
+def tier_12(line: str) -> list[str]:
+```
+- **Given:** one line of comma-separated text, which may contain a quoted field with a comma inside it.
+- **Must return:** the list of fields, in order, with the surrounding quotes of any quoted field removed.
+- **Must not use:** the `csv` module.
+- **Example:** `tier_12('Tashkent,"Yunusobod, 5",2026')` → `["Tashkent", "Yunusobod, 5", "2026"]` — three fields, not four.
+- *Trap: you need a flag for "am I currently inside quotes?" This is exactly what `pandas.read_csv` does for you under the hood — build it once so you know.*
 
-**13. Template renderer** ●● · string scanning, dict lookup · →prompt eng (Tier 5)
-Given a template like `"Hello {name}, you have {count} messages"` and a dict `{"name": "Xas", "count": 3}`, produce the filled string — **without** `.format()` or f-strings (scan and substitute yourself). This is how prompt templates work under the hood.
+**13. Template renderer** ●● · string scanning, dict lookup
+```
+def tier_13(template: str, values: dict[str, object]) -> str:
+```
+- **Given:** a template string containing `{key}` placeholders, and a dict of values.
+- **Must return:** the template with each `{key}` replaced by its value (converted to text) — **without** using `.format()` or an f-string to do the substitution. Scan and build the result yourself.
+- **Example:** `tier_13("Hello {name}, you have {count} messages", {"name": "Xas", "count": 3})` → `"Hello Xas, you have 3 messages"`
 
 ---
+
 
 ## Block C — Lists, comprehensions & data structures (14–21)
 *Choosing the right structure by instinct.*
