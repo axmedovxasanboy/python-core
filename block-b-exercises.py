@@ -30,8 +30,6 @@ latin_to_cyrillic = {
     'h': 'ҳ', 'y': 'й', 'q': 'қ', 'x': 'х'
 }
 
-
-
 def tier_7(text: str) -> list[str]:
     if len(text) == 0:
         return []
@@ -50,7 +48,6 @@ def tier_7(text: str) -> list[str]:
             lower_case_words.append(word_helper)
 
     return lower_case_words
-
 
 def tier_8(text: str) -> dict[str, int]:
     desired_words = list()
@@ -80,7 +77,6 @@ def tier_8(text: str) -> dict[str, int]:
         result[w] = counter
 
     return result
-
 
 def tier_8_complicated(text: str, n: int) -> list[tuple[str, int]]:
     desired_words = list()
@@ -152,8 +148,6 @@ def tier_9(text: str) -> str:
             i = i + 1
 
     return result
-
-
 
 
 if __name__ == "__main__":
