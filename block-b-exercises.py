@@ -1,3 +1,5 @@
+import re
+
 latin_to_cyrillic = {
     # Uppercase Multi-character
     'Ch': 'Ч', 'CH': 'Ч',
@@ -14,6 +16,10 @@ latin_to_cyrillic = {
     'ya': 'я',
     'yo': 'ё',
     'ts': 'ц',
+    'o\'' : 'ў',
+    'O\'' : 'Ў',
+    'g\'' : 'ғ',
+    'G\'' : 'Ғ',
 
     # Uppercase Single Character
     'A': 'А', 'B': 'Б', 'V': 'В', 'G': 'Г', 'D': 'Д',
@@ -24,7 +30,7 @@ latin_to_cyrillic = {
 
     # Lowercase Single Character
     'a': 'а', 'b': 'б', 'v': 'в', 'g': 'г', 'd': 'д',
-    'e': 'е', 'z': 'з', 'i': 'и', 'j': 'й', 'k': 'к',
+    'e': 'е', 'z': 'з', 'i': 'и', 'j': 'ж', 'k': 'к',
     'l': 'л', 'm': 'м', 'n': 'н', 'o': 'о', 'p': 'п',
     'r': 'р', 's': 'с', 'c': 'с', 't': 'т', 'u': 'у', 'f': 'ф',
     'h': 'ҳ', 'y': 'й', 'q': 'қ', 'x': 'х'
@@ -101,7 +107,7 @@ def tier_8_complicated(text: str, n: int) -> list[tuple[str, int]]:
 
         result.append((w, counter))
 
-    sorted_result = sorted(result, key=lambda x: x[1], reverse=True)
+    sorted_result = sorted(result, key=lambda x: x[1])
     return sorted_result[:n]
 
 def tier_9(text: str) -> str:
@@ -149,6 +155,93 @@ def tier_9(text: str) -> str:
 
     return result
 
+def tier_10(a: str, b: str) -> int:
+    if len(a) != len(b):
+        raise RuntimeError("string size should be equal")
+
+    difference_count = 0
+
+    for i in range(len(a)):
+        if a[i] != b[i]:
+            difference_count += 1
+
+    return difference_count
+
+def tier_10_complicated(a: str, b: str) -> int:
+    a_word_length = len(a)
+    b_word_length = len(b)
+    distance_count = 0
+    for i in range(b_word_length):
+        if i == a_word_length - 1 or i == b_word_length - 1:
+            if a_word_length > b_word_length:
+                distance_count += a_word_length - b_word_length
+            elif a_word_length < b_word_length:
+                distance_count += b_word_length - a_word_length
+            break
+
+        if a[i] != b[i]:
+            distance_count += 1
+
+    return distance_count
+
+def tier_11(log_lines: list[str]) -> dict[str, int]:
+
+    log_pattern = r"^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\s+([^\s]+)"
+
+    result: dict[str, int] = dict()
+
+    for log in log_lines:
+        match = re.match(log_pattern, log)
+        if match:
+            log_info = match.group(1)
+            if log_info.upper() in result:
+                current_count = result[log_info.upper()]
+                current_count += 1
+                result[log_info.upper()] = current_count
+            elif log_info.upper() not in result:
+                result[log_info.upper()] = 1
+
+    return result
+
+def tier_12(line: str) -> list[str]:
+    result: list[str] = []
+    is_inside_quote = False
+    helper = ""
+    for i in range(len(line)):
+
+        c = line[i]
+
+        if c == ",":
+            if is_inside_quote:
+                helper += c
+                continue
+            elif not is_inside_quote:
+                if len(helper) > 0:
+                    result.append(helper)
+                    helper = ""
+        elif c == "\"":
+            if len(helper) == 0:
+                is_inside_quote = True
+            elif is_inside_quote and len(helper) > 0:
+                is_inside_quote = False
+                if len(helper) > 0:
+                    result.append(helper)
+                    helper = ""
+            elif not is_inside_quote and len(helper) > 0:
+                helper += c
+
+        else:
+            helper += c
+
+    result.append(helper)
+
+    return result
+
+def tier_13(template: str, values: dict[str, object]) -> str:
+    for key, value in values.items():
+        template = template.replace('{' + str(key) + '}', str(value))
+    return template
+
 
 if __name__ == "__main__":
-    print(tier_9("Calom"))
+    print(tier_11(["2026-06-26 14:03:12 ERROR auth: bad token", "2026-06-26 14:03:15 DEBUG auth: login ok", "2026-06-26 14:03:16 ERROR auth: bad token"]))
