@@ -107,7 +107,7 @@ def tier_8_complicated(text: str, n: int) -> list[tuple[str, int]]:
 
         result.append((w, counter))
 
-    sorted_result = sorted(result, key=lambda x: x[1])
+    sorted_result = sorted(result, key=lambda x: (-1 * x[1], x[0]))
     return sorted_result[:n]
 
 def tier_9(text: str) -> str:
@@ -204,36 +204,59 @@ def tier_11(log_lines: list[str]) -> dict[str, int]:
     return result
 
 def tier_12(line: str) -> list[str]:
-    result: list[str] = []
-    is_inside_quote = False
-    helper = ""
-    for i in range(len(line)):
+    commas = [index for index, char in enumerate(line) if char == ","]
+    quotes = [index for index, char in enumerate(line) if char == "\""]
 
-        c = line[i]
+    if len(quotes) == 0:
+        return line.split(",")
 
-        if c == ",":
-            if is_inside_quote:
-                helper += c
-                continue
-            elif not is_inside_quote:
-                if len(helper) > 0:
-                    result.append(helper)
-                    helper = ""
-        elif c == "\"":
-            if len(helper) == 0:
-                is_inside_quote = True
-            elif is_inside_quote and len(helper) > 0:
-                is_inside_quote = False
-                if len(helper) > 0:
-                    result.append(helper)
-                    helper = ""
-            elif not is_inside_quote and len(helper) > 0:
-                helper += c
+    if len(commas) == 0:
+        return [line[1:-1]]
 
+    removable_comma_indexes = []
+    quote_index = 0
+    while True:
+        quote_1 = quotes[quote_index]
+        if quote_index + 1 == len(quotes):
+            quote_2 = len(line) - 1
         else:
-            helper += c
+            quote_2 = quotes[quote_index + 1]
 
-    result.append(helper)
+        for el in commas:
+            if quote_1 < el < quote_2:
+                removable_comma_indexes.append(el)
+
+        quote_index += 2
+
+        if quote_index >= len(quotes):
+            break
+    for r_ind in removable_comma_indexes:
+        commas.remove(r_ind)
+
+    if len(commas) == 0:
+        return [line]
+
+    result: list[str] = []
+    index = 0
+    starting_index = 0
+
+    while True:
+        comma_index = commas[index]
+        value = line[starting_index:comma_index]
+        if len(value) > 0 and (value[0] == "\"" and value[-1] == "\""):
+            value = value[1:-1]
+
+        result.append(value)
+        starting_index = comma_index + 1
+        index += 1
+
+        if index == len(commas):
+            value = line[starting_index:]
+            if len(value) > 0 and (value[0] == "\"" and value[-1] == "\""):
+                value = value[1:-1]
+
+            result.append(value)
+            break
 
     return result
 
@@ -244,4 +267,8 @@ def tier_13(template: str, values: dict[str, object]) -> str:
 
 
 if __name__ == "__main__":
-    print(tier_11(["2026-06-26 14:03:12 ERROR auth: bad token", "2026-06-26 14:03:15 DEBUG auth: login ok", "2026-06-26 14:03:16 ERROR auth: bad token"]))
+    # txt = '"x",,"y"'
+    # print(tier_12(txt), len(tier_12(txt)))
+    # print(tier_8_complicated("cherry banana apple", 2))
+    print(sorted([("the", 2), ("cat", 2), ("bird", 1)], key=lambda x: (-1*x[1], x[0])))
+
