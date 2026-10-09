@@ -25,22 +25,56 @@ def tier_15(pairs: list[tuple[str, float]]) -> dict[str, list[float]]:
 
 
     for elem in pairs:
-        if elem[0] not in helper_set:
+        key_element = elem[0]
+        if key_element not in helper_set:
+            result[key_element] = [elem[1]]
             helper_set.add(elem[0])
-            helper = {elem[0]: [elem[1]]}
-        else:
-             result[elem[0]]
 
+        else:
+            values = result[key_element]
+            values.append(elem[1])
+            result[key_element] = values
 
 
     return result
 
+def tier_15_complicated(pairs: list[tuple[str, float]]) -> dict[str, float]:
+    result: dict[str, float] = dict()
+
+    values = tier_15(pairs)
+
+    for key, value_list in values.items():
+        total = 0
+        for el in value_list:
+            total += el
+
+        result[key] = total / len(value_list)
+
+    return result
+
+def tier_16(nested: list[list[int]]) -> list[int]:
+    return [num for row in nested for num in row if num % 2 == 0]
+
+def tier_17(rows: list[list]) -> list[list]:
+    result: list[list] = list()
+
+    row_length = len(rows[0])
+
+    for i in range(row_length):
+        holder = list()
+
+        for row in rows:
+            holder.append(row[i])
+
+        result.append(holder)
+
+    return result
+
+def tier_17_complicated(rows: list[list]) -> list[list]:
+    return list(zip(*rows))
+
 
 if __name__ == "__main__":
-    # print(tier_14_complicated([{"id": 1, "n": "a"}, {"id": 2, "n": "b"}, {"id": 1, "n": "c"}], "id"))
+    # print(tier_17([[1, 5], [2, 6], [3, 7], [4, 8]]))
 
-    test_case: list[tuple[str, float]] = [("a", 1), ("b", 2), ("a", 3)]
-
-    for el in test_case:
-        print(el[0], list(el[1]))
-
+    print(list(zip([[1, 2, 3, 4], [5, 6, 7, 8]])))
