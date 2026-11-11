@@ -145,9 +145,8 @@ def tier_8_complicated(text: str, n: int) -> list[tuple[str, int]]:
 ```
 def tier_9(text: str) -> str:
 ```
-- **Given:** a string of Uzbek Latin text.
-- **Must return:** its Cyrillic transliteration.
-- **The mapping table is not given — building it is part of the exercise.** Look up the real Latin↔Cyrillic correspondence for Uzbek (including digraphs like `sh`, `ch`, `o'`, `g'`) and encode it yourself. I'm specifying the function's job, not handing you the data.
+- **Given:** a string built only from the standard Uzbek Latin single letters (`a, b, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, x, y, z`) plus the four digraphs `sh`, `ch`, `o'`, `g'` — assume clean, native-vocabulary words only. No loanword spellings, no apostrophe-as-glottal-stop, no case where `s` and `h` are meant separately. That real-world mess is exactly why project #5 (`uztext`) is a 12-hour library later, not a 20-minute exercise now — this rung is scoped to the clean case on purpose.
+- **Must return:** the Cyrillic transliteration.
 - **Example:** `tier_9("shahar")` → `"шаҳар"`
 - *Trap: `sh` is one Cyrillic letter, but a naive scanner sees `s` then `h` separately. Multi-character sequences must be matched before single ones. This is the actual hard part of your real `uztext` package.*
 
@@ -199,71 +198,277 @@ def tier_13(template: str, values: dict[str, object]) -> str:
 ## Block C — Lists, comprehensions & data structures (14–21)
 *Choosing the right structure by instinct.*
 
-**14. Order-preserving dedup** ●● · set + list · ⊕
-Remove duplicates from a list, keeping the **first** occurrence of each, in original order. Do it in one pass (a set for "seen", a list for output) — not the O(n²) nested-loop way.
-`[3, 1, 3, 2, 1] → [3, 1, 2]`
-`tier_14_complicated`: dedup a list of records by a **key** (e.g. dedup dicts by their `"id"`, keep the first). This is `drop_duplicates(subset=...)`.
+> **Ground rules** (same as Blocks A and B): match the given signature exactly. No `input()`/`print()` — every one of these is a plain function. The function must **return** its answer. Unstated cases are deliberately left to you. One example per exercise points you the right way; it is not the full test suite.
+>
+> **New standing rule for this block:** don't mutate the input. Every function here takes a list or dict and must leave it exactly as it found it — build and return a new one. Silently modifying a caller's data is one of the nastier bug classes in data code, and this is the block where the temptation starts.
 
-**15. Group-by** ●● · dict-of-lists · ⊕ · →the most common data op there is
-Given a list of `(category, value)` pairs, return a dict mapping each category → the list of its values.
-`[("a", 1), ("b", 2), ("a", 3)] → {"a": [1, 3], "b": [2]}`
-`tier_15_complicated`: return category → the **mean** of its values (this is `groupby().mean()`).
+**14. Order-preserving dedup** ●● · set + list
+```
+def tier_14(items: list) -> list:
+```
+- **Given:** a list, possibly with duplicates.
+- **Must return:** a new list keeping only the **first** occurrence of each value, in original order.
+- **Must do it in one pass** — a set for "have I seen this," a list for output. Not a nested loop scanning back over the output each time.
+- **Example:** `tier_14([3, 1, 3, 2, 1])` → `[3, 1, 2]`
+
+```
+def tier_14_complicated(records: list[dict], key: str) -> list[dict]:
+```
+- **Given:** a list of dicts, and the name of the field to dedup on.
+- **Must return:** a new list keeping the **first** record for each distinct value of `records[i][key]`, in original order.
+- **Example:** `tier_14_complicated([{"id": 1, "n": "a"}, {"id": 2, "n": "b"}, {"id": 1, "n": "c"}], "id")` → `[{"id": 1, "n": "a"}, {"id": 2, "n": "b"}]` — the third record is dropped; the one kept is the *first* `id=1`, so `"n"` is `"a"`, not `"c"`.
+- This is `drop_duplicates(subset=...)`.
+
+**15. Group-by** ●● · dict-of-lists
+```
+def tier_15(pairs: list[tuple[str, float]]) -> dict[str, list[float]]:
+```
+- **Given:** a list of `(category, value)` pairs.
+- **Must return:** a dict mapping each category to the list of its values, **in the order they appeared**.
+- **Example:** `tier_15([("a", 1), ("b", 2), ("a", 3)])` → `{"a": [1, 3], "b": [2]}`
+
+```
+def tier_15_complicated(pairs: list[tuple[str, float]]) -> dict[str, float]:
+```
+- **Given:** the same.
+- **Must return:** a dict mapping each category to the **mean** of its values.
+- **Example:** `tier_15_complicated([("a", 1), ("b", 2), ("a", 3)])` → `{"a": 2.0, "b": 2.0}`
+- This is `groupby().mean()`.
 
 **16. Flatten & filter** ●● · comprehension fluency
-Given a nested list, flatten it one level and keep only the elements satisfying a condition — in a single comprehension.
-`[[1, 2], [3, 4], [5]], keep even → [2, 4]`
+```
+def tier_16(nested: list[list[int]]) -> list[int]:
+```
+- **Given:** a list of lists of ints.
+- **Must return:** one flat list containing only the **even** numbers, in original order.
+- **Must be written as a single comprehension** — that's the skill being drilled. (A loop version would pass the tests and miss the point; see the note in Block B about solving the right exercise.)
+- **Example:** `tier_16([[1, 2], [3, 4], [5]])` → `[2, 4]`
 
-**17. Transpose** ●● · nested iteration · ⊕
-Turn a list of rows (list of lists) into a list of columns.
-`[[1, 2, 3], [4, 5, 6]] → [[1, 4], [2, 5], [3, 6]]`
-`tier_17_complicated`: do it two ways — a nested comprehension, and with `zip(*rows)` — and know why they're equivalent.
+**17. Transpose** ●● · nested iteration
+```
+def tier_17(rows: list[list]) -> list[list]:
+```
+- **Given:** a list of rows, all the same length (a rectangular grid).
+- **Must return:** the list of columns.
+- **Example:** `tier_17([[1, 2, 3], [4, 5, 6]])` → `[[1, 4], [2, 5], [3, 6]]`
 
-**18. Min-max normalization** ●● · two-pass scaling · →feature scaling
-Scale a list of numbers to the range [0, 1] using `(x - min) / (max - min)`.
-`[10, 20, 30] → [0.0, 0.5, 1.0]`
-*Trap: what happens when every value is identical? `max - min` is 0. Decide and handle it.*
+```
+def tier_17_complicated(rows: list[list]) -> list[list]:
+```
+- **Given:** the same. **Must return:** the same result — but written with `zip(*rows)` instead of index arithmetic.
+- The point is to write it both ways and understand why they're equivalent. Note `zip` yields tuples, and the contract says lists.
 
-**19. One-hot encoder** ●●● · set vocab, index mapping · →feature engineering
-Given a list of category labels, build the sorted set of unique categories, then map each input label to a one-hot vector (a list of 0s with a single 1 at that category's index).
-`["cat", "dog", "cat"] → [[1,0], [0,1], [1,0]]` (vocab `["cat","dog"]`)
+**18. Min-max normalization** ●● · two-pass scaling
+```
+def tier_18(values: list[float]) -> list[float]:
+```
+- **Given:** a list of numbers.
+- **Must return:** a new list scaled to the range [0, 1] by `(x - min) / (max - min)`.
+- **Example:** `tier_18([10, 20, 30])` → `[0.0, 0.5, 1.0]`
+- *Trap: what if every value is identical? Then `max - min` is `0`, and the formula divides by zero. The spec deliberately doesn't say what to do — decide, and be able to say why.*
 
-**20. Sliding-window batches** ●● · slicing · →mini-batching
-Given a list and a window size `k`, return consecutive non-overlapping chunks; the last may be short.
-`[1,2,3,4,5], k=2 → [[1,2], [3,4], [5]]`
-*(You'll rewrite this as a generator in #36 — keep your solution.)*
+**19. One-hot encoder** ●●● · set vocab, index mapping
+```
+def tier_19(labels: list[str]) -> list[list[int]]:
+```
+- **Given:** a list of category labels.
+- **Must return:** one vector per input label, in input order. The vocabulary is the **sorted** unique labels; each vector is all `0`s with a single `1` at that label's index in the vocabulary.
+- **Example:** `tier_19(["cat", "dog", "cat"])` → `[[1, 0], [0, 1], [1, 0]]` — vocabulary is `["cat", "dog"]`, so `cat` puts its `1` at index 0.
+- Sorting the vocabulary is what makes this reproducible; without it the same data could encode differently between runs.
 
-**21. Sparse dot product** ●●● **★** · dict iteration, an efficiency insight · ⊕ · →embeddings
-Represent two sparse vectors as dicts `{index: value}` (missing index = 0). Compute their dot product — iterating only the **shorter** dict and looking up the other.
-`{0: 2, 3: 1}, {3: 4, 5: 9} → 4` (only index 3 overlaps: 1×4)
-`tier_21_complicated`: **cosine similarity** = dot / (‖a‖ · ‖b‖). This is the math under every semantic search.
+**20. Sliding-window batches** ●● · slicing
+```
+def tier_20(items: list, k: int) -> list[list]:
+```
+- **Given:** a list and a batch size `k`.
+- **Must return:** consecutive **non-overlapping** chunks of size `k`; the final chunk may be shorter.
+- **Example:** `tier_20([1, 2, 3, 4, 5], 2)` → `[[1, 2], [3, 4], [5]]`
+- *You'll rewrite this as a generator in #36 — keep your solution.*
+
+**21. Sparse dot product** ●●● **★** · dict iteration, an efficiency insight
+```
+def tier_21(a: dict[int, float], b: dict[int, float]) -> float:
+```
+- **Given:** two sparse vectors as dicts mapping index → value. An index absent from a dict means its value there is `0`.
+- **Must return:** their dot product — the sum of `a[i] * b[i]` over every index `i` present in **both**.
+- **Must iterate only the shorter dict**, looking up the other. Understand why that matters when one vector has 10 entries and the other has 100,000.
+- **Example:** `tier_21({0: 2, 3: 1}, {3: 4, 5: 9})` → `4` — only index `3` appears in both: `1 × 4`. Index `0` and index `5` contribute nothing, because the other vector is `0` there.
+
+```
+def tier_21_complicated(a: dict[int, float], b: dict[int, float]) -> float:
+```
+- **Given:** the same two sparse vectors.
+- **Must return:** their cosine similarity — the dot product divided by the product of their magnitudes, where a vector's magnitude is the square root of the sum of its squared values.
+- **Example:** `tier_21_complicated({0: 3, 1: 4}, {0: 3, 1: 4})` → `1.0` — a vector compared to itself is maximally similar, whatever its magnitude. That's a useful self-check: if your function doesn't return `1.0` here, it's wrong, and you don't need a second test to know it.
+- *Trap: what if a vector is empty, or all zeros? Its magnitude is `0`, and you're dividing by it again.*
+- This is the math under every semantic search you'll ever build.
 
 ---
+
 
 ## Block D — File I/O (22–27)
 *The half of item 1 the 456 never touched. This is the closer.*
 
-> **Data:** you need real files to read. Use what's around — your own `.py` files, a free book from Project Gutenberg (`gutenberg.org`), a log from your VPS, or a small open dataset from `data.egov.uz` (which doubles as recon for roadmap project #4). Messy real data beats a clean fixture.
+> **Data:** every exercise below reads or writes real files, of two kinds:
+> 1. **Tiny fixtures you type yourself.** Each exercise shows the exact file contents its example uses. Save them in a `fixtures/` folder. They're how you check your function is pointed the right way.
+> 2. **Real, messy data.** Once the fixture passes, run your function on something real: your own `.py` files, a free book from Project Gutenberg (`gutenberg.org`), a log from your VPS, or a small open dataset from `data.egov.uz` (which doubles as recon for roadmap project #4). Real files have blank lines, missing trailing newlines, Cyrillic, `\r\n` line endings and junk rows. Your fixture has none of that. Finding out what breaks is the real exercise.
 
-**22. File `wc`** ● · open/read, the `with` statement
-Read a text file and report its line count, word count, and character count. The on-ramp to file I/O.
+> **Ground rules** (Blocks A–C, plus file-specific ones):
+> - Match the given signature exactly: name, parameters, return type. File paths come in as `str`.
+> - No `input()` or `print()` inside any function. Every one of them **returns** its result, and that includes #24, which in the old spec said "print how many". A count you can `assert` on beats a count on screen.
+> - **Always open files with `with`.** No bare `open()` followed by a `.close()` you might never reach.
+> - **Always pass `encoding="utf-8"` explicitly.** Your data is Uzbek, in both Latin and Cyrillic. The default encoding depends on the OS (on Windows it's often `cp1251` or `cp1252`), so code that works on your machine can corrupt text on someone else's. Leaving the encoding out is a bug that hasn't happened yet.
+> - **Never modify an input file.** If an output file already exists, overwrite it.
+> - Some cases are left unstated on purpose: an empty file, a file with no trailing newline, an output path in a folder that doesn't exist. Deciding what should happen in those cases is part of the exercise. The exceptions are cases a spec below pins down explicitly. Those aren't yours to decide.
+> - One example per exercise points you the right way. It is not the full test suite.
+
+**Standing stretch, starting here:** for file code, look up pytest's built-in `tmp_path` fixture. It gives each test a fresh, empty temporary folder, so your tests never touch real files and never leave anything behind.
+
+**22. File `wc`** ● · `with`, reading a file, characters vs. bytes
+```
+def tier_22(path: str) -> tuple[int, int, int]:
+```
+- **Given:** the path to a UTF-8 text file.
+- **Must return:** `(lines, words, characters)`, in that order.
+  - **lines:** the number of lines Python sees when you iterate over the file. A final line without a trailing newline still counts.
+  - **words:** runs of non-whitespace text, split on any whitespace. This is a plain `wc` count, not #7's tokenizer: `"don't"` and `"5,"` are each one word.
+  - **characters:** characters, **not bytes**.
+- **Example:** `fixtures/wc.txt` contains these two lines, each ending in a newline:
+  ```
+  hello world
+  шаҳар bor
+  ```
+  `tier_22("fixtures/wc.txt")` → `(2, 4, 22)`
+- *Trap: the file is 27 bytes on disk but 22 characters. Each Cyrillic letter takes 2 bytes in UTF-8. If you got 27, you counted bytes. Find out where that happened. Also: what does text mode do to `\r\n` line endings, and does it change your character count for a file saved on Windows?*
 
 **23. Word frequency, from a file** ●● · full read→process→write round trip · ⊕ · **← this is the item-1 diagnostic**
-Read a text file, compute word frequencies (reuse #8's logic), and **write** the top-N results to an output file, one `word: count` per line. This is the exercise that actually closes Tier-0 item 1 — file I/O + the dict work, end to end.
-`tier_23_complicated`: take input/output filenames and N as arguments; handle the input file not existing (ties to Block E).
+```
+def tier_23(in_path: str, out_path: str, n: int) -> None:
+```
+- **Given:** an input text file, an output path, and how many top words to keep.
+- **Must:** write the `n` most frequent words to `out_path`, one `word: count` per line. Every line ends in a newline, and there is no other output. Ranking and tokenization follow `tier_8_complicated` exactly: count descending, ties broken alphabetically.
+- **Must reuse your Block B code by importing it**, not by copying and pasting. If #8 lives in another file, this is where you learn how one of your modules imports from another. If that import doesn't work, fix that first. That problem is part of this exercise, not a distraction from it.
+- **Example:** `fixtures/words.txt` contains:
+  ```
+  the cat the dog the bird cat
+  ```
+  After `tier_23("fixtures/words.txt", "out/top.txt", 3)`, `out/top.txt` contains:
+  ```
+  the: 3
+  cat: 2
+  bird: 1
+  ```
+- This one closes Tier-0 item 1: file I/O plus the dict work, end to end.
 
-**24. Log filter** ●● · read-process-write pipeline
-Read a log file, write only the `ERROR` lines to a new file, and print how many you wrote. ETL in its simplest form.
+```
+def tier_23_complicated(in_path: str, out_path: str, n: int) -> int | None:
+```
+- **Given:** the same.
+- **Must return:** the number of lines written. If `in_path` doesn't exist, return `None`, and **`out_path` must not be created at all.** It can't be left behind as an empty file either.
+- **Example:** `tier_23_complicated("fixtures/words.txt", "out/top.txt", 3)` → `3` · `tier_23_complicated("fixtures/nope.txt", "out/x.txt", 3)` → `None`, and `out/x.txt` does not exist afterwards.
+- *Trap: the order of operations matters. Opening a file for writing creates it immediately, before you've written anything. Think about what has to have succeeded before you're allowed to touch the output. (This is your first `try`/`except`, and Block E builds on it.)*
 
-**25. Merge files** ●● · iterating files, accumulation
-Given several filenames, concatenate them into one output file. Combining data shards.
-`tier_25_complicated`: dedup lines across all files while merging.
+**24. Log filter** ●● · read→filter→write pipeline, line-by-line iteration
+```
+def tier_24(in_path: str, out_path: str, level: str = "ERROR") -> int:
+```
+- **Given:** a log file whose lines are shaped like #11's (`"2026-06-26 14:03:12 ERROR auth: bad token"`), an output path, and a level to keep.
+- **Must:** write every line whose **level field** equals `level` to `out_path`, copied exactly and in original order.
+- **Must return:** how many lines were written.
+- **Must iterate the file line by line.** Don't `.read()` the whole thing into memory. A production log can be bigger than your RAM, and the habit starts here (#37 builds on it).
+- **Example:** `fixtures/app.log` contains:
+  ```
+  2026-06-26 14:03:12 ERROR auth: bad token
+  2026-06-26 14:03:15 INFO auth: retried after ERROR
+  2026-06-26 14:03:16 ERROR db: timeout
+  ```
+  `tier_24("fixtures/app.log", "out/errors.log")` → `2`. `out/errors.log` holds lines 1 and 3. Line 2 is an `INFO` line, even though the word `ERROR` appears in it.
+- *Trap: `"ERROR" in line` gets line 2 wrong. Match the field, not a substring. You already wrote that parsing in #11.*
+
+**25. Merge files** ●● · iterating several files, line-ending hygiene · ⊕
+```
+def tier_25(in_paths: list[str], out_path: str) -> int:
+```
+- **Given:** a list of input files, in order, and an output path.
+- **Must:** write every line of every input to `out_path`, file by file and in order. **Every output line ends in exactly one newline.**
+- **Must return:** the number of lines written.
+- **Example:** `fixtures/a.txt` is `"1\n2"` (**no** trailing newline) and `fixtures/b.txt` is `"3\n"`.
+  `tier_25(["fixtures/a.txt", "fixtures/b.txt"], "out/merged.txt")` → `3`, and `out/merged.txt` is `"1\n2\n3\n"`.
+- *Trap: straight concatenation gives you `"1\n23\n"`, which is two lines with a corrupted record. When you merge data shards, a missing final newline is the most common way that happens. Real files from other people often lack one.*
+
+```
+def tier_25_complicated(in_paths: list[str], out_path: str) -> int:
+```
+- **Given:** the same.
+- **Must:** merge as above, keeping only the **first** occurrence of each line across all files, in order. Two lines count as equal if they match after removing the line ending. No other whitespace is stripped.
+- **Must return:** the number of lines written.
+- **Example:** `a.txt` is `"x\ny\n"`, `b.txt` is `"y\nz"` → writes `"x\ny\nz\n"`, returns `3`.
+- You built this in #14. Reuse the idea, and notice that the "seen" set now lives across files, not inside one.
 
 **26. Real CSV summary** ●●● · `csv` module, type conversion, aggregation · ⊕
-Now you **may** use the `csv` module (contrast #12). Read a CSV with a header, then compute something real: the mean of one numeric column and the counts within one categorical column.
-`tier_26_complicated`: skip malformed rows (wrong field count, non-numeric where a number's expected) without crashing — collect how many you skipped.
+```
+def tier_26(path: str, numeric_col: str, category_col: str) -> tuple[float, dict[str, int]]:
+```
+- **Given:** a CSV file with a header row, the name of a numeric column, and the name of a categorical column.
+- **Must return:** `(mean of numeric_col, counts of each value in category_col)`.
+- **Now you may use the `csv` module.** That's the contrast with #12: you've built the state machine once, so now you get to use the real one. Read the `csv` module docs' note about what to pass as `newline=` when opening the file, and follow it.
+- **Example:** `fixtures/districts.csv`:
+  ```
+  district,year,population
+  Yunusobod,2024,350
+  "Chilonzor, 2-mavze",2024,250
+  Yunusobod,2025,360
+  ```
+  `tier_26("fixtures/districts.csv", "population", "district")` → `(320.0, {"Yunusobod": 2, "Chilonzor, 2-mavze": 1})`
+- Every value comes out of `csv` as a **string**. The `"350"` you read isn't a number until you convert it.
 
-**27. JSON config round-trip** ●● · `json` load/dump · →every repo's config
-Read a JSON config file, change one value, write it back out preserving the rest. Managing experiment settings.
+```
+def tier_26_complicated(path: str, numeric_col: str, category_col: str) -> tuple[float, dict[str, int], int]:
+```
+- **Given:** the same, but the file has bad rows.
+- **Must return:** `(mean, counts, skipped)`. A row is **malformed** if it has the wrong number of fields or its `numeric_col` value can't be parsed as a number (an empty value counts). Malformed rows are skipped entirely: they contribute to neither the mean nor the counts. `skipped` is how many there were. The function must not crash on any of them.
+- **Example:** `fixtures/districts_dirty.csv`:
+  ```
+  district,year,population
+  Yunusobod,2024,350
+  Chilonzor,2024,n/a
+  Sergeli,2024
+  Yunusobod,2025,360
+  Mirobod,2024,200,extra
+  ```
+  → `(355.0, {"Yunusobod": 2}, 3)`. `n/a` isn't a number, `Sergeli` is a field short, and `Mirobod` has one field too many.
+- *Trap: `csv.DictReader` does **not** raise on a row with the wrong field count. It quietly pads short rows and tucks extra values away under a special key. Print one of those rows once and look at it before you decide how to detect them. (That print is for debugging only. Take it out before you submit.)*
+
+**27. JSON config round-trip** ●●● · `json` load/dump, safe writes · ⊕ · →every repo's config
+```
+def tier_27(path: str, key: str, value: object) -> None:
+```
+- **Given:** a JSON config file whose top level is an object, a top-level key, and a new value.
+- **Must:** set `key` to `value` and write the file back with every other key unchanged and **in its original order**. Use 2-space indentation, and keep non-ASCII text **human-readable** in the file: `"Тошкент"` must stay `"Тошкент"`, not turn into `"То..."`.
+- **Pinned failure cases** (these are decided for you):
+  - If `key` doesn't already exist → raise `KeyError`, file untouched. A typo in a key name should fail loudly, not quietly add a new setting nobody reads.
+  - If `value` can't be serialized to JSON (try a `set`) → raise, and **the original file must still be intact and valid.**
+- **Example:** `fixtures/config.json`:
+  ```json
+  {"model": "bge-m3", "chunk_size": 512, "city": "Тошкент"}
+  ```
+  After `tier_27("fixtures/config.json", "chunk_size", 1024)`, the file reads:
+  ```json
+  {
+    "model": "bge-m3",
+    "chunk_size": 1024,
+    "city": "Тошкент"
+  }
+  ```
+- *Trap (★): opening a file with `"w"` empties it **immediately**. If serialization fails halfway through `json.dump`, you've just destroyed your experiment config, and nothing told you. Work out how to make the failure happen **before** the file is touched. Test it on purpose with a `set` value and check the file afterwards.*
+
+```
+def tier_27_complicated(path: str, dotted_key: str, value: object) -> None:
+```
+- **Given:** the same, but the key is a dotted path into nested objects.
+- **Must:** set the nested value. All of the base version's guarantees still hold: missing segment → `KeyError` with the file untouched, an unserializable value → raise with the file intact, and order and readability preserved.
+- **Example:** with `{"retriever": {"top_k": 5, "model": "bge-m3"}, "lang": "uz"}`, calling `tier_27_complicated(path, "retriever.top_k", 10)` → the file now has `"top_k": 10` inside `"retriever"`, and everything else is unchanged.
+- *Trap: what if a middle segment exists but isn't an object, as in `"lang.x"` where `"lang"` is a string? Decide what happens, and make sure the file survives it.*
 
 ---
 

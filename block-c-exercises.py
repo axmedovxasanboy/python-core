@@ -1,8 +1,4 @@
-from email.base64mime import header_length
 from math import sqrt
-from unittest import result
-
-from tier_exercises import tier_6_parse
 
 
 def tier_14(items: list) -> list:
