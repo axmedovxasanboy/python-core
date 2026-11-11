@@ -199,6 +199,17 @@ def tier_1(scores: list[float]) -> dict[str, int]:
 
     return result
 
+def tier_1_optimal(scores: list[float]) -> dict[str, int]:
+    counts = {"low": 0, "mid": 0, "high": 0}
+    for score in scores:
+        if score < 0.4:
+            counts["low"] += 1
+        elif score < 0.8:
+            counts["mid"] += 1
+        else:
+            counts["high"] += 1
+    return counts
+
 def tier_2(numbers: list[float]) -> tuple[float, float, float] | None:
     if len(numbers) == 0:
         return None
