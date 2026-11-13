@@ -1,19 +1,20 @@
+import math
 from enum import Enum
 from typing import Optional
 
 
 class CheckStyle(Enum):
-    NATURAL_NUMBERS = 1 # 1, 2, 3, ...
-    WHOLE_NUMBERS = 2 # 0, 1, 2, 3 ...
-    INTEGER_NUMBERS = 3 # ... -3, -2, -1, 0, 1, 2, 3 ...
-    RATIONAL_NUMBERS = 4 # fraction of two integers
-    POSITIVE_RATIONALS = 7 # >= 0 (fraction of two positive integers)
-    NEGATIVE_INTEGERS = 6 # < 0 (-1, -2, -3, -4, ...)
-    NEGATIVE_RATIONALS = 8 # < 0 (fraction of two integers and result is negative)
-    ANY_NUMBER = 9 # ... -3.0, -2.9, -1.98, -0.97, 0, 1.1, 2.2, 3.3, 4.4 ...
+    NATURAL_NUMBERS = 1  # 1, 2, 3, ...
+    WHOLE_NUMBERS = 2  # 0, 1, 2, 3 ...
+    INTEGER_NUMBERS = 3  # ... -3, -2, -1, 0, 1, 2, 3 ...
+    RATIONAL_NUMBERS = 4  # fraction of two integers
+    POSITIVE_RATIONALS = 7  # >= 0 (fraction of two positive integers)
+    NEGATIVE_INTEGERS = 6  # < 0 (-1, -2, -3, -4, ...)
+    NEGATIVE_RATIONALS = 8  # < 0 (fraction of two integers and result is negative)
+    ANY_NUMBER = 9  # ... -3.0, -2.9, -1.98, -0.97, 0, 1.1, 2.2, 3.3, 4.4 ...
+
 
 class ValidNumber:
-
     class NumberType(Enum):
         INTEGER = 0
         RATIONAL = 1
@@ -41,7 +42,6 @@ def is_valid_number(n: str, check_style: CheckStyle) -> ValidNumber:
         valid.is_valid = False
         return valid
 
-
     for i in range(len(n)):
         if i == 0:
             if n[i] == "-":
@@ -52,7 +52,7 @@ def is_valid_number(n: str, check_style: CheckStyle) -> ValidNumber:
         if n[i] == ".":
             if not has_dot:
                 has_dot = True
-            else: 
+            else:
                 return valid
         elif i != 0 and (n[i] == '+' or n[i] == '-'):
             return valid
@@ -101,7 +101,6 @@ def is_valid_number(n: str, check_style: CheckStyle) -> ValidNumber:
             except ValueError as e:
                 print(e)
                 return valid
-
 
         case CheckStyle.RATIONAL_NUMBERS:
             valid.is_valid = False
@@ -174,6 +173,7 @@ def is_valid_number(n: str, check_style: CheckStyle) -> ValidNumber:
                 print(e)
                 return valid
 
+
 def tier_1(scores: list[float]) -> dict[str, int]:
     low_threshold = 0.4
     mid_threshold = 0.8
@@ -199,6 +199,7 @@ def tier_1(scores: list[float]) -> dict[str, int]:
 
     return result
 
+
 def tier_1_optimal(scores: list[float]) -> dict[str, int]:
     counts = {"low": 0, "mid": 0, "high": 0}
     for score in scores:
@@ -209,6 +210,7 @@ def tier_1_optimal(scores: list[float]) -> dict[str, int]:
         else:
             counts["high"] += 1
     return counts
+
 
 def tier_2(numbers: list[float]) -> tuple[float, float, float] | None:
     if len(numbers) == 0:
@@ -226,13 +228,14 @@ def tier_2(numbers: list[float]) -> tuple[float, float, float] | None:
 
     return min_num, max_num, total / len(numbers)
 
+
 def tier_2_complicated(numbers: list[float]) -> tuple[float, float, float, float] | None:
     if len(numbers) == 0:
         return None
     min_num = min(numbers)
     max_num = max(numbers)
     total = sum(numbers)
-    mean = total/len(numbers)
+    mean = total / len(numbers)
     sorted_numbers = sorted(numbers)
     length = len(sorted_numbers)
     medians = list()
@@ -251,8 +254,23 @@ def tier_2_complicated(numbers: list[float]) -> tuple[float, float, float, float
 
     return min_num, max_num, mean, median
 
-def tier_3(values: list[float], threshold: float) -> int:
 
+def tier_2_complicated_optimal(numbers: list[float]) -> tuple[float, float, float, float]:
+    if not numbers:
+        raise ValueError("tier_2_complicated_optimal() needs at least one number")
+
+    ordered = sorted(numbers)
+    n = len(ordered)
+    mid = n // 2
+    if n % 2 == 1:
+        median = ordered[mid]
+    else:
+        median = (ordered[mid - 1] + ordered[mid]) / 2
+
+    return ordered[0], ordered[-1], sum(ordered) / n, median
+
+
+def tier_3(values: list[float], threshold: float) -> int:
     countdown = 0
     best = 0
 
@@ -265,6 +283,19 @@ def tier_3(values: list[float], threshold: float) -> int:
         if best < countdown:
             best = countdown
     return best
+
+
+def tier_3_optimal(values: list[float], threshold: float) -> int:
+    current = best = 0
+    for v in values:
+        if v > threshold:
+            current += 1
+            if current > best:
+                best = current
+        else:
+            current = 0
+    return best
+
 
 def tier_4(number: str) -> bool:
     untouched_numbers = list()
@@ -292,6 +323,22 @@ def tier_4(number: str) -> bool:
 
     return total % 10 == 0
 
+
+def tier_4_optimal(number: str) -> bool:
+    if len(number) < 2 or not number.isdigit():
+        return False
+
+    total = 0
+    for i, ch in enumerate(reversed(number)):
+        digit = int(ch)
+        if i % 2 == 1:
+            digit *= 2
+            if digit > 9:
+                digit -= 9
+        total += digit
+    return total % 10 == 0
+
+
 def tier_5_bytes(n: int) -> str:
     unit_identifier = 0
     helper = n
@@ -299,18 +346,30 @@ def tier_5_bytes(n: int) -> str:
         helper = float(helper / 1024)
         unit_identifier += 1
 
-    if unit_identifier == 0: # bytes
+    if unit_identifier == 0:  # bytes
         return f"{n} Bytes"
-    elif unit_identifier == 1: # KB
+    elif unit_identifier == 1:  # KB
         return f"{helper:.2f} Kb"
-    elif unit_identifier == 2: # MB
+    elif unit_identifier == 2:  # MB
         return f"{helper:.2f} MB"
-    elif unit_identifier == 3: # GB
+    elif unit_identifier == 3:  # GB
         return f"{helper:.2f} GB"
-    elif unit_identifier == 4: # TB
+    elif unit_identifier == 4:  # TB
         return f"{helper:.2f} TB"
     else:
         raise ValueError("Unrecognized error have been occurred")
+
+
+def tier_5_bytes_optimal(n: int) -> str:
+    if n < 0:
+        raise ValueError(f"byte count can't be negative: {n}")
+    units = ["B", "KB", "MB", "GB", "TB"]
+    size = n
+    for unit in units:
+        if round(size, 2) < 1024 or unit == units[-1]:
+            return f"{n} B" if unit == "B" else f"{size:.2f} {unit}"
+        size /= 1024
+
 
 def tier_5_seconds(n: int) -> str:
     unit_identifier = 0
@@ -352,7 +411,7 @@ def tier_5_seconds(n: int) -> str:
         if minutes > 0:
             result += f"{minutes}m "
 
-        if seconds > 0 :
+        if seconds > 0:
             result += f"{seconds}s"
 
         return result.strip()
@@ -361,7 +420,7 @@ def tier_5_seconds(n: int) -> str:
         if hours > 0:
             result += f"{hours}h "
 
-        if minutes> 0:
+        if minutes > 0:
             result += f"{minutes}m "
 
         if seconds > 0:
@@ -382,7 +441,7 @@ def tier_5_seconds(n: int) -> str:
         return result.strip()
 
     elif unit_identifier == 4:
-        if years> 0:
+        if years > 0:
             result += f"{years}y "
         if days > 0:
             result += f"{days}d "
@@ -413,11 +472,37 @@ def tier_5_seconds(n: int) -> str:
     else:
         raise ValueError("Unrecognized error have been occurred")
 
+
+def tier_5_seconds_optimal(n: int) -> str:
+    if n < 0:
+        raise ValueError(f"duration can't be negative: {n}")
+    if n == 0:
+        return "0s"
+    parts = []
+    remaining = n
+    for suffix, size in (("d", 86400), ("h", 3600), ("m", 60), ("s", 1)):
+        count, remaining = divmod(remaining, size)
+        if count:
+            parts.append(f"{count}{suffix}")
+    return " ".join(parts)
+
+
 def tier_6_parse(raw: str) -> float | None:
     valid_number_ = is_valid_number(raw, check_style=CheckStyle.ANY_NUMBER)
     if valid_number_.is_valid:
         return valid_number_.valid_number
     return None
+
+
+def tier_6_parse_optimal(raw: str) -> float | None:
+    try:
+        value = float(raw)
+    except ValueError:
+        return None
+    if not math.isfinite(value):
+        return None
+    return value
+
 
 def tier_6() -> float | None:
     print("Program is started. For stopping use one of these: q / exit / quit")
@@ -442,15 +527,45 @@ def tier_6() -> float | None:
     return mean
 
 
-# Comment for Claude checking.
-# Tier 6 already covers any number that has been entered with comma (,) so that's why I duplicated and rename function name itself
-# You can check that by yourself if you are not so sure about that!
+STOP_WORDS = {"q", "exit", "quit"}
+
+
+def tier_6_optimal() -> float | None:
+    print("Enter numbers one per line. Stop with q / exit / quit.")
+    total = 0.0
+    count = 0
+    while True:
+        try:
+            raw = input(">>> ").strip()
+        except EOFError:
+            break
+        if raw.lower() in STOP_WORDS:
+            break
+        value = tier_6_parse(raw)
+        if value is None:
+            print(f"Not a number: {raw!r}")
+            continue
+        total += value
+        count += 1
+
+    if count == 0:
+        print("No numbers entered.")
+        return None
+    mean = total / count
+    print(f"Mean: {mean}")
+    return mean
+
 
 def tier_6_complicated_parse(raw: str) -> float | None:
     valid_number_ = is_valid_number(raw, check_style=CheckStyle.ANY_NUMBER)
     if valid_number_.is_valid:
         return valid_number_.valid_number
     return None
+
+
+def tier_6_complicated_parse_optimal(raw: str) -> float | None:
+    return tier_6_parse_optimal(raw.replace(",", "."))
+
 
 def tier_6_complicated() -> float | None:
     print("Program is started. For stopping use one of these: q / exit / quit")
@@ -475,5 +590,4 @@ def tier_6_complicated() -> float | None:
 
 
 if __name__ == "__main__":
-    print(tier_2([]))
-    print(tier_2([0, 0, 0]))
+    pass
